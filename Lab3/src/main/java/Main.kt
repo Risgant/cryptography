@@ -1,40 +1,69 @@
-public class Main {
-    public static void main(String[] args) {
-        for(int i = 0; i < 100; i++) {
-            System.out.println(i);
-            var M = 71;
-            var paramsGenerator = new ParamsGenerator(M);
-            var availableParams = paramsGenerator.findParams();
-            var paramIdx = (int)(Math.random()*availableParams.size());
-            var param = availableParams.get(paramIdx);
+import kotlin.math.sqrt
 
-            var a = param.getX();
-            var b = param.getY();
-            System.out.println("a: "+a+", b: "+b);
-            var groupGenerator = new GroupGenerator(a, b, M);
-            var availablePoints = groupGenerator.findPoints();
-            var pointIdx = (int)(Math.random()*availablePoints.size());
-            var point = availablePoints.get(pointIdx);
-            System.out.println("G: "+point);
-            var keysGenerator = new KeysGenerator(a, b , M);
-            var degree = keysGenerator.findDegree(point);
-            System.out.println("c: "+degree);
-
-            var privateA = (int)(Math.random()*(degree-1));
-            System.out.println("n_a: "+privateA);
-            var publicA = keysGenerator.generateKey(privateA, point);
-            System.out.println("Pa: "+publicA);
-
-            var privateB = (int)(Math.random()*(degree-1));
-            System.out.println("n_b: "+privateB);
-            var publicB = keysGenerator.generateKey(privateB, point);
-            System.out.println("Pb: "+publicB);
-
-            var keyAB = keysGenerator.generateKey(privateA, publicB);
-            System.out.println("key n_aPb: "+keyAB);
-            var keyBA = keysGenerator.generateKey(privateB, publicA);
-            System.out.println("key n_bPa: "+keyBA);
-        }
-
+fun main(args: Array<String>) {
+    val M = args[0].toInt()
+    if(!isPrime(M)) {
+        println("$M is not prime")
+        return
     }
+    val paramsGenerator = ParamsGenerator(M)
+    val availableParams = paramsGenerator.findParams()
+    val paramIdx = (Math.random() * availableParams.size).toInt()
+    val param = availableParams[paramIdx]
+    val a = param.first
+    val b = param.second
+    println("a: $a, b: $b")
+    val groupGenerator = GroupGenerator(a, b, M)
+    val availablePoints = groupGenerator.findPoints()
+    val pointIdx = (Math.random() * availablePoints.size).toInt()
+    val point = availablePoints[pointIdx]
+    println("G: $point")
+    val keysGenerator = KeysGenerator(a, b, M)
+    val degree = keysGenerator.findDegree(point)
+    println("c: $degree")
+    var privateA: Int
+    var publicA: Pair<Int, Int>
+    while(true) {
+        privateA = (Math.random() * (degree - 1)).toInt()
+        publicA = keysGenerator.generateKey(privateA, point)
+        if(publicA.second != 0) {
+            break
+        }
+    }
+    println("n_a: $privateA")
+    println("Pa: $publicA")
+    var privateB: Int
+    var publicB: Pair<Int, Int>
+    while(true) {
+        privateB = (Math.random() * (degree - 1)).toInt()
+        publicB = keysGenerator.generateKey(privateB, point)
+        if(publicB.second != 0) {
+            break
+        }
+    }
+    println("n_b: $privateB")
+    println("Pb: $publicB")
+    val keyAB = keysGenerator.generateKey(privateA, publicB)
+    println("key n_aPb: $keyAB")
+    val keyBA = keysGenerator.generateKey(privateB, publicA)
+    println("key n_bPa: $keyBA")
+    if(keyAB != keyBA) {
+        println("FAIL")
+        return
+    }
+}
+
+fun isPrime(n: Int): Boolean {
+    if(n == 2) {
+        return true
+    }
+    if(n % 2 == 0) {
+        return false
+    }
+    for(i in 3..sqrt(n.toDouble()).toInt() step 2) {
+        if(n % i == 0) {
+            return false
+        }
+    }
+    return true
 }

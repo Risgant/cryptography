@@ -1,68 +1,69 @@
-import lombok.AllArgsConstructor;
+import java.math.BigInteger
 
-import java.math.BigInteger;
-import java.util.Objects;
+class KeysGenerator(private val a: Int, private val b: Int, private val M: Int) {
 
-@AllArgsConstructor
-public class KeysGenerator {
-    private int a;
-    private int b;
-    private int M;
-
-    public int findDegree(Pair<Integer> point) {
-        int degree = 1;
-        Pair<Integer> point1 = point;
-        while(true) {
-            ++degree;
-            int lambda;
-            if(Objects.equals(point1.getX(), point.getX()) && Objects.equals(point1.getY(), point.getY())) {
-                lambda = BigInteger.valueOf(3L * point1.getX() * point1.getX() + a)
-                        .mod(BigInteger.valueOf(M))
-                        .multiply(BigInteger.valueOf(2L * point1.getY()).modInverse(BigInteger.valueOf(M)))
-                        .mod(BigInteger.valueOf(M)).intValue();
+    fun findDegree(point: Pair<Int, Int>): Int {
+        var degree = 1
+        var point1 = point
+        while (true) {
+            ++degree
+            var lambda: Int
+            lambda = if (point1.first == point.first && point1.second == point.second) {
+                BigInteger.valueOf(3L * point1.first * point1.first + a)
+                        .mod(BigInteger.valueOf(M.toLong()))
+                        .multiply(BigInteger.valueOf(2L * point1.second).modInverse(BigInteger.valueOf(M.toLong())))
+                        .mod(BigInteger.valueOf(M.toLong())).toInt()
             } else {
-                lambda = BigInteger.valueOf(point.getY() - point1.getY())
-                        .mod(BigInteger.valueOf(M))
-                        .multiply(BigInteger.valueOf(point.getX() - point1.getX()).modInverse(BigInteger.valueOf(M)))
-                        .mod(BigInteger.valueOf(M)).intValue();
+                BigInteger.valueOf((point.second - point1.second).toLong())
+                        .mod(BigInteger.valueOf(M.toLong()))
+                        .multiply(BigInteger.valueOf((point.first - point1.first).toLong()).modInverse(BigInteger.valueOf(M.toLong())))
+                        .mod(BigInteger.valueOf(M.toLong())).toInt()
             }
-            int x3 = BigInteger.valueOf((long) lambda * lambda - point1.getX() - point.getX())
-                    .mod(BigInteger.valueOf(M)).intValue();
-            int y3 = BigInteger.valueOf(-point1.getY() + (long) lambda * (point1.getX() - x3))
-                    .mod(BigInteger.valueOf(M)).intValue();
-            if(x3 == point.getX()) {
-                return degree+1;
+            val x3 = BigInteger.valueOf(lambda.toLong() * lambda - point1.first - point.first)
+                    .mod(BigInteger.valueOf(M.toLong())).toInt()
+            val y3 = BigInteger.valueOf(-point1.second + lambda.toLong() * (point1.first - x3))
+                    .mod(BigInteger.valueOf(M.toLong())).toInt()
+            if (x3 == point.first) {
+                return degree + 1
             } else {
-                point1 = new Pair<>(x3, y3);
+                point1 = Pair(x3, y3)
             }
         }
     }
 
-    public Pair<Integer> generateKey(int privateKey, Pair<Integer> point) {
-        Pair<Integer> point1 = point;
-        for(int i = 0; i < privateKey; ++i) {
-            int lambda;
-            if(point1.getX().equals(point.getX()) && point1.getY().equals(point.getY())) {
-                lambda = BigInteger.valueOf(3L * point1.getX() * point1.getX() + a)
-                        .mod(BigInteger.valueOf(M))
-                        .multiply(BigInteger.valueOf(2L * point1.getY()).modInverse(BigInteger.valueOf(M)))
-                        .mod(BigInteger.valueOf(M)).intValue();
-            } else if(point.getX().equals(point1.getX())){
-                i = i+1;
-                point1 = point;
-                continue;
-            } else {
-                lambda = BigInteger.valueOf(point.getY() - point1.getY())
-                        .mod(BigInteger.valueOf(M))
-                        .multiply(BigInteger.valueOf(point.getX() - point1.getX()).modInverse(BigInteger.valueOf(M)))
-                        .mod(BigInteger.valueOf(M)).intValue();
-            }
-            int x3 = BigInteger.valueOf((long) lambda * lambda - point1.getX() - point.getX())
-                    .mod(BigInteger.valueOf(M)).intValue();
-            int y3 = BigInteger.valueOf(-point1.getY() + (long) lambda * (point1.getX() - x3))
-                    .mod(BigInteger.valueOf(M)).intValue();
-            point1 = new Pair<>(x3, y3);
+    fun generateKey(privateKey: Int, point: Pair<Int, Int>): Pair<Int, Int> {
+        if(point.first == 0 && point.second == 0) {
+            return Pair(0, 0)
         }
-        return point1;
+
+        var point1 = point
+        var i = 1
+        while (i < privateKey) {
+            var lambda: Int
+            if (point1.first == point.first && point1.second == point.second) {
+                lambda = BigInteger.valueOf(3L * point1.first * point1.first + a)
+                        .mod(BigInteger.valueOf(M.toLong()))
+                        .multiply(BigInteger.valueOf(2L * point1.second).modInverse(BigInteger.valueOf(M.toLong())))
+                        .mod(BigInteger.valueOf(M.toLong())).toInt()
+            } else if (point.first == point1.first && i == privateKey - 1) {
+                return Pair(0, 0)
+            } else if (point.first == point1.first) {
+                point1 = point
+                i += 2
+                continue
+            } else {
+                lambda = BigInteger.valueOf((point.second - point1.second).toLong())
+                        .mod(BigInteger.valueOf(M.toLong()))
+                        .multiply(BigInteger.valueOf((point.first - point1.first).toLong()).modInverse(BigInteger.valueOf(M.toLong())))
+                        .mod(BigInteger.valueOf(M.toLong())).toInt()
+            }
+            val x3 = BigInteger.valueOf(lambda.toLong() * lambda - point1.first - point.first)
+                    .mod(BigInteger.valueOf(M.toLong())).toInt()
+            val y3 = BigInteger.valueOf(-point1.second + lambda.toLong() * (point1.first - x3))
+                    .mod(BigInteger.valueOf(M.toLong())).toInt()
+            point1 = Pair(x3, y3)
+            ++i
+        }
+        return point1
     }
 }

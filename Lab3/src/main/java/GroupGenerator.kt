@@ -1,37 +1,33 @@
-import lombok.AllArgsConstructor;
+import java.util.ArrayList
+import kotlin.math.pow
 
-import java.util.ArrayList;
-import java.util.List;
+class GroupGenerator(private val a: Int, private val b: Int, private val M: Int) {
 
-@AllArgsConstructor
-public class GroupGenerator {
-    private int a;
-    private int b;
-    private int M;
-
-    public List<Pair<Integer>> findPoints() {
-        var point = new ArrayList<Pair<Integer>>();
-        for(int x = 0; x < M; ++x) {
-            int yy = f(x) % M;
-            var roots = getRoots(yy);
-            for(int y : roots) {
-                point.add(new Pair<>(x, y));
+    fun findPoints(): List<Pair<Int, Int>> {
+        val point = ArrayList<Pair<Int, Int>>()
+        for (x in 1 until M) {
+            val yy = f(x) % M
+            val roots = getRoots(yy)
+            for (y in roots) {
+                if(y != 0) {
+                    point.add(Pair(x, y))
+                }
             }
         }
-        return point;
+        return point
     }
 
-    private List<Integer> getRoots(int x) {
-        var roots = new ArrayList<Integer>();
-        for(int i = 0; i < M; ++i) {
-            if(Math.pow(i, 2) % M == x) {
-                roots.add(i);
+    private fun getRoots(x: Int): List<Int> {
+        val roots = ArrayList<Int>()
+        for (i in 0 until M) {
+            if (i.toDouble().pow(2.0).toInt() % M == x) {
+                roots.add(i)
             }
         }
-        return roots;
+        return roots
     }
 
-    private int f(int x) {
-        return (int)Math.pow(x, 3) + a * x + b;
+    private fun f(x: Int): Int {
+        return x.toDouble().pow(3.0).toInt() + a * x + b
     }
 }

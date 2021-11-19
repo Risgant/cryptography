@@ -66,4 +66,26 @@ class KeysGenerator(private val a: Int, private val b: Int, private val M: Int) 
         }
         return point1
     }
+
+    fun sumPoints(p1: Pair<Int, Int>,  p2: Pair<Int, Int>): Pair<Int, Int> {
+        var lambda: Int
+        if (p1.first == p2.first && p1.second == p2.second) {
+            lambda = BigInteger.valueOf(3L * p1.first * p1.first + a)
+                .mod(BigInteger.valueOf(M.toLong()))
+                .multiply(BigInteger.valueOf(2L * p1.second).modInverse(BigInteger.valueOf(M.toLong())))
+                .mod(BigInteger.valueOf(M.toLong())).toInt()
+        } else if (p2.first == p1.first) {
+            return Pair(0, 0)
+        } else {
+            lambda = BigInteger.valueOf((p2.second - p1.second).toLong())
+                .mod(BigInteger.valueOf(M.toLong()))
+                .multiply(BigInteger.valueOf((p2.first - p1.first).toLong()).modInverse(BigInteger.valueOf(M.toLong())))
+                .mod(BigInteger.valueOf(M.toLong())).toInt()
+        }
+        val x3 = BigInteger.valueOf(lambda.toLong() * lambda - p1.first - p2.first)
+            .mod(BigInteger.valueOf(M.toLong())).toInt()
+        val y3 = BigInteger.valueOf(- p1.second + lambda.toLong() * (p1.first - x3))
+            .mod(BigInteger.valueOf(M.toLong())).toInt()
+        return Pair(x3, y3)
+    }
 }

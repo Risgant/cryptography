@@ -8,6 +8,10 @@ fun main(args: Array<String>) {
     }
     val paramsGenerator = ParamsGenerator(M)
     val availableParams = paramsGenerator.findParams()
+    println("parameters: (a, b)")
+    for(param in availableParams) {
+        println("$param")
+    }
     val paramIdx = (Math.random() * availableParams.size).toInt()
     val param = availableParams[paramIdx]
     val a = param.first
@@ -15,6 +19,10 @@ fun main(args: Array<String>) {
     println("a: $a, b: $b")
     val groupGenerator = GroupGenerator(a, b, M)
     val availablePoints = groupGenerator.findPoints()
+    println("points: (x, y)")
+    for(point in availablePoints) {
+        println("$point")
+    }
     val pointIdx = (Math.random() * availablePoints.size).toInt()
     val point = availablePoints[pointIdx]
     println("G: $point")
